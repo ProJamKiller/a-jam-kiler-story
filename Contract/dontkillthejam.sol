@@ -1,24 +1,36 @@
-The "Linearization of inheritance graph impossible" error typically occurs when there's a problem with how contracts are inheriting from each other. This often happens when the inheritance hierarchy becomes too complex or there are conflicting base contracts.
-
-For a thirdweb ERC721 contract, here's a simplified version that should resolve inheritance issues:
-
-```solidity
-// SPDX-License-Identifier: MIT
+// SPDX-License// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@thirdweb-dev/contracts/base/ERC721Base.sol";
 
 contract DystopianNarrativeNFT is ERC721Base {
+    // Mapping from tokenId to chosen game path ("A", "B", or "C")
     mapping(uint256 => string) public gamePath;
+
+    // Mapping to ensure each address can only finalize their NFT once
     mapping(address => bool) public hasFinalNFT;
+
+    // Mapping to ensure each address receives the producer reward only once
     mapping(address => bool) public hasReceivedProducerReward;
+
+    // Address of the Producer Protocol ERC20 token contract
     address public producerTokenAddress;
 
-    event NFTMinted(uint256 indexed tokenId, address indexed owner, string path);
+    // Events for minting, updating, marking progress, and rewarding
+    event NFTMinted(
+        uint256 indexed tokenId,
+        address indexed owner,
+        string path
+    );
     event NFTUpdated(uint256 indexed tokenId, string newURI);
-    event ProgressMarked(address indexed player, string progress, uint256 timestamp);
+    event ProgressMarked(
+        address indexed player,
+        string progress,
+        uint256 timestamp
+    );
     event ProducerRewarded(address indexed player, uint256 amount);
 
+    // The Producer Protocol interface
     interface IProducerToken {
         function mint(address to, uint256 amount) external;
     }
@@ -32,31 +44,55 @@ contract DystopianNarrativeNFT is ERC721Base {
         producerTokenAddress = _producerTokenAddress;
     }
 
-    function mintNFT(address to, string memory path) external returns (uint256 tokenId) {
-        require(compareStrings(path, "A") || compareStrings(path, "B") || compareStrings(path, "C"), "Invalid path");
-        
+    // Restrict certain functions to the contract deployer
+    modifier onlyAdmin() {
+        require(msg.sender == owner(), "Only admin can call this function");
+        _;
+    }
+
+    // Mint an NFT with an initial metadata URI based on the chosen game path.
+    function mintNFT(
+        address to,
+        string memory path
+    ) external returns (uint256 tokenId) {
+        require(
+            compareStrings(path, "A") ||
+                compareStrings(path, "B") ||
+                compareStrings(path, "C"),
+            "Invalid path"
+        );
+
         tokenId = _currentIndex;
         _safeMint(to, 1);
-        
+
+        // Set the initial metadata URI based on the selected path.
         string memory initialURI = getInitialTokenURI(path);
         _setTokenURI(tokenId, initialURI);
-        
+
+        // Record the selected game path.
         gamePath[tokenId] = path;
-        
+
         emit NFTMinted(tokenId, to, path);
     }
 
+    // Emit progress event to record narrative progression.
     function markProgress(string memory progress) external {
         emit ProgressMarked(msg.sender, progress, block.timestamp);
     }
 
+    // Finalize the narrative and mint the NFT with a final metadata URI.
     function finalizeNFT(
-        address to, 
-        string memory finalURI, 
+        address to,
+        string memory finalURI,
         string memory path
-    ) external returns (uint256 tokenId) {
+    ) external onlyAdmin returns (uint256 tokenId) {
         require(!hasFinalNFT[to], "Final NFT already minted for this address");
-        require(compareStrings(path, "A") || compareStrings(path, "B") || compareStrings(path, "C"), "Invalid path");
+        require(
+            compareStrings(path, "A") ||
+                compareStrings(path, "B") ||
+                compareStrings(path, "C"),
+            "Invalid path"
+        );
 
         tokenId = _currentIndex;
         _safeMint(to, 1);
@@ -67,20 +103,31 @@ contract DystopianNarrativeNFT is ERC721Base {
         emit NFTMinted(tokenId, to, path);
     }
 
-    function updateTokenURI(uint256 tokenId, string memory newURI) external {
+    // Update the token URI for an existing NFT.
+    function updateTokenURI(
+        uint256 tokenId,
+        string memory newURI
+    ) external onlyAdmin {
         require(_exists(tokenId), "Token does not exist");
         _setTokenURI(tokenId, newURI);
         emit NFTUpdated(tokenId, newURI);
     }
 
-    function rewardProducer(address to, uint256 amount) external {
-        require(!hasReceivedProducerReward[to], "Producer reward already distributed");
+    // Reward the player with ERC20 tokens (Mojo tokens) from Producer Protocol.
+    function rewardProducer(address to, uint256 amount) external onlyAdmin {
+        require(
+            !hasReceivedProducerReward[to],
+            "Producer reward already distributed"
+        );
         hasReceivedProducerReward[to] = true;
         IProducerToken(producerTokenAddress).mint(to, amount);
         emit ProducerRewarded(to, amount);
     }
 
-    function getInitialTokenURI(string memory path) internal pure returns (string memory) {
+    // Return an initial token URI based on the game path.
+    function getInitialTokenURI(
+        string memory path
+    ) internal pure returns (string memory) {
         if (compareStrings(path, "A")) {
             return "ipfs://path-a-initial-metadata";
         } else if (compareStrings(path, "B")) {
@@ -92,9 +139,11 @@ contract DystopianNarrativeNFT is ERC721Base {
         }
     }
 
-    function compareStrings(string memory a, string memory b) internal pure returns (bool) {
-        return (keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b)));
+    // Utility function to compare two strings.
+    function compareStrings(
+        string memory a,
+        string memory b
+    ) internal pure returns (bool) {
+        return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
 }
-```
-
