@@ -1,0 +1,41 @@
+# Node Modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment Files
+.env
+
+# Build Directories (for Solidity contracts)
+build/
+artifacts/
+cache/
+
+# Temporary Files
+.tmp/
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# Editor Directories and Files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Coverage Reports
+coverage/
+
+# Dependency Directories
+package-lock.json
+yarn.lock
+
+# Hardhat Files
+*.swp
+*.swo
