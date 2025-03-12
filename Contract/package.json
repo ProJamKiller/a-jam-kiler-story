@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "thirdweb": "^5.92.1"
+    "thirdweb": "^5.92.1",
+    "@thirdweb-dev/contracts": "^3.7.2"
   }
 }
