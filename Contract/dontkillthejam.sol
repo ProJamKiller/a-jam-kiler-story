@@ -8,6 +8,8 @@ contract DystopianNarrativeNFT is ERC721Base {
     mapping(address => bool) public hasFinalNFT;
     mapping(address => bool) public hasReceivedProducerReward;
     address public producerTokenAddress;
+    uint256 public constant MAX_SUPPLY = 3333;
+
     event NFTMinted(
         uint256 indexed tokenId,
         address indexed owner,
@@ -25,9 +27,10 @@ contract DystopianNarrativeNFT is ERC721Base {
         address _defaultAdmin,
         string memory _name,
         string memory _symbol,
-        address _producerTokenAddress
-    ) ERC721Base(_defaultAdmin, _name, _symbol) {
-        _setupOwner(_defaultAdmin);
+        address _producerTokenAddress,
+        address _royaltyRecipient,
+        uint128 _royaltyBps  // Changed from uint256 to uint128
+    ) ERC721Base(_defaultAdmin, _name, _symbol, _royaltyRecipient, _royaltyBps) {
         producerTokenAddress = _producerTokenAddress;
     }
 
@@ -35,6 +38,7 @@ contract DystopianNarrativeNFT is ERC721Base {
         address to,
         string memory path
     ) external returns (uint256 tokenId) {
+        require(_currentIndex < MAX_SUPPLY, "Max supply reached");
         require(
             compareStrings(path, "A") ||
                 compareStrings(path, "B") ||
@@ -58,6 +62,7 @@ contract DystopianNarrativeNFT is ERC721Base {
         string memory finalURI,
         string memory path
     ) external onlyOwner returns (uint256 tokenId) {
+        require(_currentIndex < MAX_SUPPLY, "Max supply reached");
         require(!hasFinalNFT[to], "Final NFT already minted for this address");
         require(
             compareStrings(path, "A") ||
