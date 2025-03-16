@@ -1,7 +1,7 @@
 module.exports = {
   contractType: "Don't Kill the Jam NFT",
   network: "optimism",
-  source: "./contract/DontKillTheJam.sol",
+  source: "DontKillTheJam.sol",
   meta: {
     name: "Don't Kill the Jam NFT",
     description: "Choose your musical Destiny Jam Killer – be rewarded with Mojo for Producer Protocol and receive an exclusive collector's NFT.",
