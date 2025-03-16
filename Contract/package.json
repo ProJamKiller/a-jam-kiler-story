@@ -1,15 +1,17 @@
 {
-  "name": "dystopian-nft",
+  "name": "dont-kill-the-jam-nft",
   "version": "1.0.0",
-  "description": "DystopianNarrativeNFT contract deployment",
+  "description": "NFT contract for Don't Kill the Jam deployed via Thirdweb",
   "scripts": {
-    "deploy": "npx thirdweb deploy --network optimism"
+    "build": "thirdweb build",
+    "deploy": "thirdweb deploy"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jam-Killer-Productions-LLC/dontkillthejammer.git"
+  },
   "dependencies": {
-    "@thirdweb-dev/contracts": "^3.7.2",
-    "thirdweb": "^5.92.1"
+    "@thirdweb-dev/contracts": "^2.0.0",
+    "ethers": "^5.7.2"
   }
 }

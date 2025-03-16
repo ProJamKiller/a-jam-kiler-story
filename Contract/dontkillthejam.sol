@@ -3,12 +3,20 @@ pragma solidity ^0.8.0;
 
 import "@thirdweb-dev/contracts/base/ERC721Base.sol";
 
-contract DystopianNarrativeNFT is ERC721Base {
+/*
+    Contract Name   : Don't Kill the Jam NFT
+    Symbol          : DKJ
+    Description     : Choose your musical Destiny Jam Killer, Be rewarded with Mojo for Producer Protocol and an exclusive collectors NFT.
+    Platform Fee    : 0.000777 ETH on Optimism
+*/
+
+contract DontKillTheJamNFT is ERC721Base {
     mapping(uint256 => string) public gamePath;
     mapping(address => bool) public hasFinalNFT;
-    mapping(address => bool) public hasReceivedProducerReward;
-    address public producerTokenAddress;
+    
     uint256 public constant MAX_SUPPLY = 3333;
+    // Set mint fee to 0.000777 ETH
+    uint256 public constant MINT_FEE = 0.000777 ether;
 
     event NFTMinted(
         uint256 indexed tokenId,
@@ -21,28 +29,24 @@ contract DystopianNarrativeNFT is ERC721Base {
         string progress,
         uint256 timestamp
     );
-    event ProducerRewarded(address indexed player, uint256 amount);
 
     constructor(
         address _defaultAdmin,
-        string memory _name,
-        string memory _symbol,
-        address _producerTokenAddress,
         address _royaltyRecipient,
-        uint128 _royaltyBps  // Changed from uint256 to uint128
-    ) ERC721Base(_defaultAdmin, _name, _symbol, _royaltyRecipient, _royaltyBps) {
-        producerTokenAddress = _producerTokenAddress;
-    }
+        uint128 _royaltyBps
+    ) ERC721Base(_defaultAdmin, "Don't Kill the Jam", "DKJ", _royaltyRecipient, _royaltyBps) {}
 
+    // Public mint function requiring a fixed mint fee
     function mintNFT(
         address to,
         string memory path
-    ) external returns (uint256 tokenId) {
+    ) external payable returns (uint256 tokenId) {
+        require(msg.value == MINT_FEE, "Must send mint fee of 0.000777 ETH");
         require(_currentIndex < MAX_SUPPLY, "Max supply reached");
         require(
             compareStrings(path, "A") ||
-                compareStrings(path, "B") ||
-                compareStrings(path, "C"),
+            compareStrings(path, "B") ||
+            compareStrings(path, "C"),
             "Invalid path"
         );
         tokenId = _currentIndex;
@@ -53,10 +57,12 @@ contract DystopianNarrativeNFT is ERC721Base {
         emit NFTMinted(tokenId, to, path);
     }
 
+    // Emits progress update for the caller
     function markProgress(string memory progress) external {
         emit ProgressMarked(msg.sender, progress, block.timestamp);
     }
 
+    // Finalize NFT for a given address and mark that final NFT has been minted
     function finalizeNFT(
         address to,
         string memory finalURI,
@@ -66,8 +72,8 @@ contract DystopianNarrativeNFT is ERC721Base {
         require(!hasFinalNFT[to], "Final NFT already minted for this address");
         require(
             compareStrings(path, "A") ||
-                compareStrings(path, "B") ||
-                compareStrings(path, "C"),
+            compareStrings(path, "B") ||
+            compareStrings(path, "C"),
             "Invalid path"
         );
         tokenId = _currentIndex;
@@ -78,6 +84,7 @@ contract DystopianNarrativeNFT is ERC721Base {
         emit NFTMinted(tokenId, to, path);
     }
 
+    // Update token URI for an existing token
     function updateTokenURI(
         uint256 tokenId,
         string memory newURI
@@ -85,16 +92,6 @@ contract DystopianNarrativeNFT is ERC721Base {
         require(_exists(tokenId), "Token does not exist");
         _setTokenURI(tokenId, newURI);
         emit NFTUpdated(tokenId, newURI);
-    }
-
-    function rewardProducer(address to, uint256 amount) external onlyOwner {
-        require(
-            !hasReceivedProducerReward[to],
-            "Producer reward already distributed"
-        );
-        hasReceivedProducerReward[to] = true;
-        IProducerToken(producerTokenAddress).mint(to, amount);
-        emit ProducerRewarded(to, amount);
     }
 
     function getInitialTokenURI(
@@ -117,8 +114,4 @@ contract DystopianNarrativeNFT is ERC721Base {
     ) internal pure returns (bool) {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
-}
-
-interface IProducerToken {
-    function mint(address to, uint256 amount) external;
 }

@@ -1,13 +1,14 @@
 module.exports = {
-    contractType: "A Jam Killer Story",
-    network: "optimism",
-    meta: {
-      name: "DystopianNarrativeNFT",
-      description: "A dynamic NFT exploring three unique narrative paths in a dystopian world",
-      symbol: "DYNFT"
-    },
-    release: {
-      name: "Dystopian Narrative NFT",
-      description: "Embark on a journey through three distinct paths: building a band, developing an AI-driven solo career, or uncovering a conspiracy against artistic freedom"
-    }
-  };
+  contractType: "Don't Kill the Jam NFT",
+  network: "optimism",
+  meta: {
+    name: "Don't Kill the Jam NFT",
+    description: "Choose your musical Destiny Jam Killer – be rewarded with Mojo for Producer Protocol and receive an exclusive collector's NFT.",
+    symbol: "DKJ"
+  },
+  release: {
+    name: "Don't Kill the Jam NFT",
+    description:
+      "Embark on your musical journey by choosing one of three distinct paths: build a band, develop an AI-driven solo career, or uncover a conspiracy against artistic freedom."
+  }
+};
